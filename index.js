@@ -192,7 +192,8 @@ class PruneTransform extends Transform {
   }
 }
 
-/** @typedef {{
+/**
+ * @typedef {{
  *     map?: MapFunc,
  *     filter?: string|(() => boolean),
  *     ext?: string|string[],
