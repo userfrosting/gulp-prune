@@ -46,15 +46,15 @@ jobs:
     - run: pnpm run compile
     - run: pnpm test
 
-  release-readiness:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2.2.0
-      with:
-        node-version: ^14.0.0
-    - run: npm ci
-    - run: npm run release-readiness
+  # release-readiness:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - uses: actions/setup-node@v2.2.0
+  #     with:
+  #       node-version: ^14.0.0
+  #   - run: npm ci
+  #   - run: npm run release-readiness
 
   dependabot-approveOrMerge:
     needs: [test, pnpm-check, release-readiness]
