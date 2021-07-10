@@ -32,15 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2] - 2016-06-19
 
-_Unknown_
+Fixed bad release.
 
 ## [0.1.1] - 2016-06-19
 
-_Unknown, bad release_
+Added more package metadata.
 
 ## [0.1.0] - 2016-06-18
 
-_Unknown_
+Initial release.
 
 [Unreleased]: https://github.com/userfrosting/gulp-prune/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v1.0.0
