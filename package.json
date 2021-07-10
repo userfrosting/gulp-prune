@@ -28,10 +28,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/hh10k/gulp-prune.git"
+    "url": "https://github.com/userfrosting/gulp-prune.git"
   },
   "bugs": {
-    "url": "https://github.com/hh10k/gulp-prune/issues"
+    "url": "https://github.com/userfrosting/gulp-prune/issues"
   },
   "license": "ISC",
   "devDependencies": {
