@@ -1,4 +1,5 @@
 # Exclude all dot files by default.  Explicitly include when needed.
 \.*
-tsconfig.json
-test.js
+pnpm-lock.yaml
+src/tsconfig.json
+src/test.js

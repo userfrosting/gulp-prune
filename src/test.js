@@ -1,27 +1,13 @@
-'use strict';
-
-const mockFs = require('mock-fs');
-const fs = require('fs');
-const path = require('path');
-const assert = require('assert');
-const Transform = require('stream').Transform;
-const globby = require('globby');
-const File = require('vinyl');
-const PluginError = require('plugin-error');
-const prune = require('./index.js');
-const domain = require('domain');
-
-const types = {
-  zero: 0,
-  positive: 1,
-  object: {},
-  array: [],
-  true: true,
-  false: false,
-  null: null,
-  string: 'surprise',
-  function: () => {},
-};
+import * as fs from 'fs';
+import * as path from 'path';
+import * as assert from 'assert';
+import * as domain from 'domain';
+import { Transform } from 'stream';
+import mockFs, { restore } from 'mock-fs';
+import { sync } from 'globby';
+import File from 'vinyl';
+import PluginError from 'plugin-error';
+import { prune } from './index.js';
 
 class ExpectedError extends Error {
 }
@@ -39,7 +25,7 @@ class TestFile extends File {
 }
 
 function find(pattern) {
-  return globby.sync(pattern);
+  return sync(pattern);
 }
 
 function testStream(done, stream, expectedDeleted) {
@@ -49,7 +35,7 @@ function testStream(done, stream, expectedDeleted) {
   });
   d.run(() => {
     const original = find('**/*');
-    assert(expectedDeleted.every(f => original.indexOf(f) != -1));
+    assert.ok(expectedDeleted.every(f => original.indexOf(f) != -1));
     const expectedResult = original.filter(f => expectedDeleted.indexOf(f) == -1);
 
     find('src/**/*').forEach(f => stream.write(new TestFile('src', f)));
@@ -60,7 +46,7 @@ function testStream(done, stream, expectedDeleted) {
 
     stream.on('end', d.bind(() => {
       const result = find('**/*');
-      assert.deepEqual(result, expectedResult);
+      assert.deepStrictEqual(result, expectedResult);
 
       done();
     }));
@@ -73,37 +59,7 @@ describe('prune()', function() {
 
   it('creates a transform stream', function() {
     let stream = prune('somewhere');
-    assert(stream instanceof Transform);
-  });
-
-  it('fails with no arguments', function() {
-    assert.throws(() => {
-      prune();
-    }, PluginError);
-  });
-
-  it("fails when the first argument isn't a string or an object", function() {
-    assert.throws(() => {
-      prune(5);
-    }, PluginError);
-  });
-
-  it("fails when dest isn't an argument or in the options", function() {
-    assert.throws(() => {
-      prune({});
-    }, PluginError);
-  });
-
-  it("fails when options isn't an object", function() {
-    assert.throws(() => {
-      prune('somewhere', 5);
-    }, PluginError);
-  });
-
-  it('fails when dest is specified two ways', function() {
-    assert.throws(() => {
-      prune('somewhere', { dest: 'elsewhere' });
-    }, PluginError);
+    assert.ok(stream instanceof Transform);
   });
 
   describe('returns Transform stream', function() {
@@ -134,7 +90,7 @@ describe('prune()', function() {
       });
     });
     afterEach(() => {
-      mockFs.restore();
+      restore();
     });
 
     it('passes data through', function(done) {
@@ -148,14 +104,14 @@ describe('prune()', function() {
 
         let count = 0;
         stream.on('data', file => {
-          assert.equal(file, files[count]);
+          assert.strictEqual(file, files[count]);
           ++count;
         });
 
         files.forEach(f => stream.write(f));
 
         stream.on('end', () => {
-          assert.equal(count, files.length);
+          assert.strictEqual(count, files.length);
           done();
         });
 
@@ -191,37 +147,38 @@ describe('prune()', function() {
       });
     });
     afterEach(() => {
-      mockFs.restore();
-    });
-
-    it('must be a function', function() {
-      Object.keys(types)
-        .filter(t => t != 'function')
-        .forEach(t => {
-          assert.throws(() => {
-            prune('dest', { map: types[t] });
-          }, PluginError, 'Should not accept ' + t);
-        });
+      restore();
     });
 
     it('applies simple function transform', function(done) {
-      testStream(done, prune('dest', { map: f => path.join(path.dirname(f), 'mapped' + path.basename(f)) }), [
-        'dest/outside',
-        'dest/1',
-        'dest/dest/1',
-        'dest/dir/2',
-        'dest/dest/dir/2',
-      ]);
+      testStream(
+        done,
+        prune(
+          'dest',
+          { map: f => path.join(path.dirname(f), 'mapped' + path.basename(f)) },
+        ),
+        [
+          'dest/outside',
+          'dest/1',
+          'dest/dest/1',
+          'dest/dir/2',
+          'dest/dest/dir/2',
+        ],
+      );
     });
 
     it('applies function transform with directory', function(done) {
-      testStream(done, prune({ dest: 'dest', map: f => path.join('dest', f) }), [
-        'dest/outside',
-        'dest/1',
-        'dest/mapped1',
-        'dest/dir/2',
-        'dest/dir/mapped2',
-      ]);
+      testStream(
+        done,
+        prune('dest', { map: f => path.join('dest', f) }),
+        [
+          'dest/outside',
+          'dest/1',
+          'dest/mapped1',
+          'dest/dir/2',
+          'dest/dir/mapped2',
+        ],
+      );
     });
 
   });
@@ -243,17 +200,7 @@ describe('prune()', function() {
       });
     });
     afterEach(() => {
-      mockFs.restore();
-    });
-
-    it('fails when not a string or function', function() {
-      Object.keys(types)
-        .filter(t => t != 'string' && t != 'function')
-        .forEach(t => {
-          assert.throws(() => {
-            prune('dest', { filter: types[t] });
-          }, PluginError, 'Should not accept ' + t);
-        });
+      restore();
     });
 
     it('only deletes files that match a string pattern', function(done) {
@@ -286,12 +233,12 @@ describe('prune()', function() {
           done(error);
         });
         d.run(() => {
-          const stream = prune({
-            dest: 'dest',
-            filter: () => { throw new ExpectedError(); }
-          });
+          const stream = prune(
+            'dest',
+            { filter: () => { throw new ExpectedError(); } },
+          );
 
-          stream.on('data', file => {
+          stream.on('data', () => {
             // Empty callback required to pump files
           });
 
@@ -328,18 +275,7 @@ describe('prune()', function() {
       });
     });
     afterEach(() => {
-      mockFs.restore();
-    });
-
-    it('must be a string or string[]', function() {
-      let extTypes = Object.assign({ 'number[]': [ 123 ] }, types);
-      Object.keys(extTypes)
-        .filter(t => t != 'string' && t != 'array')
-        .forEach(t => {
-          assert.throws(() => {
-            prune('dest', { ext: extTypes[t] });
-          }, PluginError, 'Should not accept ' + t);
-        });
+      restore();
     });
 
     it('adds or removes single extension', function(done) {
@@ -351,7 +287,7 @@ describe('prune()', function() {
     });
 
     it('adds or removes multiple extensions', function(done) {
-      testStream(done, prune({ dest: 'dest', ext: [ '.new', '.new.map' ] }), [
+      testStream(done, prune('dest', { ext: [ '.new', '.new.map' ] }), [
         'dest/1.old.new',
         'dest/3.new',
         'dest/4.new',
@@ -365,29 +301,15 @@ describe('prune()', function() {
     });
 
     it('works with options.filter pattern', function(done) {
-      testStream(done, prune({ dest: 'dest', ext: [ '.new', '.new.map' ], filter: '**/3.*' }), [
+      testStream(done, prune('dest', { ext: [ '.new', '.new.map' ], filter: '**/3.*' }), [
         'dest/3.new',
       ]);
     });
 
     it('works with options.filter function', function(done) {
-      testStream(done, prune({ dest: 'dest', ext: [ '.new', '.new.map' ], filter: (name) => /3/.test(name) }), [
+      testStream(done, prune('dest', { ext: [ '.new', '.new.map' ], filter: (name) => /3/.test(name) }), [
         'dest/3.new',
       ]);
     });
-  });
-
-  describe('options.verbose', function() {
-
-    it('fails when not a boolean', function() {
-      Object.keys(types)
-        .filter(t => t != 'true' && t != 'false')
-        .forEach(t => {
-          assert.throws(() => {
-            prune('dest', { verbose: types[t] });
-          }, PluginError, 'Should not accept ' + t);
-        });
-    });
-
   });
 });

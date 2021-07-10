@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unknown]
 
+### Changed
+* This package now ships ESM.
+* API surface has been simplified, and runtime type assertions removed in favour of static checks offered by TypeScript.
+
 ## [1.0.0] - 2021-07-10
 
 ### Changed

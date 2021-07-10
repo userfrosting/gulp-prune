@@ -1,14 +1,12 @@
-'use strict';
-
-const fs = require('fs').promises;
-const path = require('path');
-const globby = require('globby');
-const PluginError = require('plugin-error');
-const colors = require('ansi-colors');
-const log = require('fancy-log');
-const Transform = require('stream').Transform;
-const File = require('vinyl');
-const AggregateError = require('aggregate-error');
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import globby from 'globby';
+import PluginError from 'plugin-error';
+import colors from 'ansi-colors';
+import log from 'fancy-log';
+import { Transform } from 'stream';
+import File from 'vinyl';
+import AggregateError from 'aggregate-error';
 
 /**
  * @param {boolean} condition
@@ -109,7 +107,7 @@ class PruneTransform extends Transform {
   }
 
   /**
-   * @param {any} file
+   * @param {unknown} file
    * @param {BufferEncoding} encoding
    * @param {import('stream').TransformCallback} callback
    */
@@ -128,10 +126,8 @@ class PruneTransform extends Transform {
       for (const mappedPath of mapped) {
         this._keep[normalize(mappedPath)] = true;
       }
-    } else if (typeof mapped === 'string') {
-      this._keep[normalize(mapped)] = true;
     } else {
-      verify(false, 'options.map function must return a string or string[], or a Promise that resolves to that.');
+      this._keep[normalize(mapped)] = true;
     }
 
     this.push(file, encoding);
@@ -199,32 +195,14 @@ class PruneTransform extends Transform {
  *     ext?: string|string[],
  *     verbose?: boolean,
  * }} Options
- * @typedef {{
- *     dest: string,
- * } & Options} OptionsWithDest
  */
 
 /**
- * @typedef {(dest: string) => PruneTransform} DestFunc
- * @typedef {(dest: string, options: Options) => PruneTransform} DestWithOptionsFunc
- * @typedef {(options: OptionsWithDest) => PruneTransform} DestAsOptionsFunc
- * @type {DestFunc & DestWithOptionsFunc & DestAsOptionsFunc}
- */// @ts-ignore
-module.exports = function prune(dest, options) {
-  // Parse, validate and normalize inputs to handle function overloads
-  verify(arguments.length <= 2, 'too many arguments');
-  if (typeof dest === 'string') {
-    options = options || {};
-    verify(typeof options === 'object', 'options must be an object');
-    verify((/** @type {OptionsWithDest} */ (options)).dest === undefined, 'options.dest should not be specified with a dest argument');
-  } else {
-    verify(options === undefined, 'dest must be a string');
-    options = (/** @type {OptionsWithDest} */ (dest));
-    verify(typeof options === 'object', 'expected dest string or options object');
-    dest = (/** @type {OptionsWithDest} */ (options)).dest;
-    verify(typeof dest === 'string', 'options.dest or dest argument must be string');
-  }
-
+ * @param {string} dest
+ * @param {Options} options
+ * @returns {Transform}
+ */
+export function prune(dest, options = {}) {
   /** @type {StrictOptions} */
   const strictOptions = {
     map: (name) => name,
@@ -233,13 +211,11 @@ module.exports = function prune(dest, options) {
   };
 
   if (options.map !== undefined) {
-    verify(typeof options.map === 'function', 'options.map must be a function');
     verify(options.ext === undefined, 'options.map and options.ext are incompatible');
     strictOptions.map = options.map;
   }
 
   if (options.filter !== undefined) {
-    verify(typeof options.filter === 'string' || typeof options.filter === 'function', 'options.filter must be a string or function');
     if (typeof options.filter === 'string') {
       strictOptions.pattern = options.filter;
     } else {
@@ -251,13 +227,11 @@ module.exports = function prune(dest, options) {
     if (!Array.isArray(options.ext)) {
       options.ext = [ options.ext ];
     }
-    verify(Array.isArray(options.ext) && options.ext.every((/** @type {any} */ e) => typeof e === 'string'), 'options.ext must be a string or string[]');
     strictOptions.ext = options.ext.slice();
   }
 
   if (options.verbose !== undefined) {
-    verify(typeof options.verbose === 'boolean', 'options.verbose must be a boolean');
-    strictOptions.verbose = !!options.verbose;
+    strictOptions.verbose = options.verbose;
   }
 
   return new PruneTransform(dest, strictOptions);
