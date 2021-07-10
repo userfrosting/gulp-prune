@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unknown]
 
+## [1.0.0] - 2021-07-10
+
+### Changed
+* Raised minimum NodeJS version to `^12.17.0 || >=14.0.0`.
+
 ## [1.0.0-rc.0] - 2021-04-18
 
 ### Added
@@ -37,8 +42,10 @@ _Unknown, bad release_
 
 _Unknown_
 
-[Unreleased]: https://github.com/hh10k/gulp-prune/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/hh10k/gulp-prune/releases/tag/v0.2.0
-[0.1.2]: https://github.com/hh10k/gulp-prune/releases/tag/v0.1.2
-[0.1.1]: https://github.com/hh10k/gulp-prune/releases/tag/v0.1.1
-[0.1.0]: https://github.com/hh10k/gulp-prune/releases/tag/v0.1.0
+[Unreleased]: https://github.com/userfrosting/gulp-prune/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v1.0.0
+[1.0.0-rc.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v1.0.0-rc.0
+[0.2.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v0.2.0
+[0.1.2]: https://github.com/userfrosting/gulp-prune/releases/tag/v0.1.2
+[0.1.1]: https://github.com/userfrosting/gulp-prune/releases/tag/v0.1.1
+[0.1.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v0.1.0
