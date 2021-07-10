@@ -57,7 +57,8 @@ jobs:
   #   - run: npm run release-readiness
 
   dependabot-approveOrMerge:
-    needs: [test, pnpm-check, release-readiness]
+    needs: [test, pnpm-check]
+    # needs: [test, pnpm-check, release-readiness]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
