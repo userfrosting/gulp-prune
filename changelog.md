@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unknown]
 
+## [2.0.0] - 2021-07-10
+
 ### Changed
 * This package now ships ESM.
 * API surface has been simplified, and runtime type assertions removed in favour of static checks offered by TypeScript.
@@ -46,7 +48,8 @@ Added more package metadata.
 
 Initial release.
 
-[Unreleased]: https://github.com/userfrosting/gulp-prune/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/userfrosting/gulp-prune/compare/v2.0.0...HEAD
+[1.0.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v2.0.0
 [1.0.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v1.0.0
 [1.0.0-rc.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v1.0.0-rc.0
 [0.2.0]: https://github.com/userfrosting/gulp-prune/releases/tag/v0.2.0
