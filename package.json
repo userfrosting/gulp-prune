@@ -1,6 +1,6 @@
 {
   "name": "gulp-prune",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0",
   "description": "Delete files that should not be in the destination directory",
   "main": "index.js",
   "types": "index.d.ts",
@@ -20,10 +20,12 @@
     "email": "SiliconSoldier@outlook.com.au",
     "url": "https://djmm.me/"
   },
-  "contributors": [{
-    "name": "Kurt Blackwell",
-    "url": "https://github.com/hh10k"
-  }],
+  "contributors": [
+    {
+      "name": "Kurt Blackwell",
+      "url": "https://github.com/hh10k"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/hh10k/gulp-prune.git"
