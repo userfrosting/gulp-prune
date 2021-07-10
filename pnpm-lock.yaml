@@ -4,7 +4,7 @@ specifiers:
   '@types/fancy-log': ^1.3.1
   '@types/node': ^14.14.41
   '@types/vinyl': ^2.0.4
-  aggregate-error: ^3.1.0
+  aggregate-error: ^4.0.0
   ansi-colors: ^4.1.1
   eslint: ^7.30.0
   fancy-log: ^1.3.3
@@ -16,7 +16,7 @@ specifiers:
   vinyl: ^2.2.1
 
 dependencies:
-  aggregate-error: 3.1.0
+  aggregate-error: 4.0.0
   ansi-colors: 4.1.1
   fancy-log: 1.3.3
   globby: 11.0.4
@@ -144,12 +144,12 @@ packages:
     hasBin: true
     dev: true
 
-  /aggregate-error/3.1.0:
-    resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
-    engines: {node: '>=8'}
+  /aggregate-error/4.0.0:
+    resolution: {integrity: sha512-8DGp7zUt1E9k0NE2q4jlXHk+V3ORErmwolEdRz9iV+LKJ40WhMHh92cxAvhqV2I+zEn/gotIoqoMs0NjF3xofg==}
+    engines: {node: '>=12'}
     dependencies:
-      clean-stack: 2.2.0
-      indent-string: 4.0.0
+      clean-stack: 4.1.0
+      indent-string: 5.0.0
     dev: false
 
   /ajv/6.12.6:
@@ -328,9 +328,11 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /clean-stack/2.2.0:
-    resolution: {integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==}
-    engines: {node: '>=6'}
+  /clean-stack/4.1.0:
+    resolution: {integrity: sha512-dxXQYI7mfQVcaF12s6sjNFoZ6ZPDQuBBLp3QJ5156k9EvUFClUoZ11fo8HnLQO241DDVntHEug8MOuFO5PSfRg==}
+    engines: {node: '>=12'}
+    dependencies:
+      escape-string-regexp: 5.0.0
     dev: false
 
   /cliui/7.0.4:
@@ -484,6 +486,11 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
     dev: true
+
+  /escape-string-regexp/5.0.0:
+    resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
+    engines: {node: '>=12'}
+    dev: false
 
   /eslint-scope/5.1.1:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
@@ -787,9 +794,9 @@ packages:
     engines: {node: '>=0.8.19'}
     dev: true
 
-  /indent-string/4.0.0:
-    resolution: {integrity: sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==}
-    engines: {node: '>=8'}
+  /indent-string/5.0.0:
+    resolution: {integrity: sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg==}
+    engines: {node: '>=12'}
     dev: false
 
   /inflight/1.0.6:
