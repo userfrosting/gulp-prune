@@ -159,7 +159,9 @@ class PruneTransform extends Transform {
         throw new AggregateError(errors);
       }
 
-    } catch (error) {
+    } catch (e) {
+      /** @type {any} */
+      const error = e;
       callback(new PluginError('gulp-prune', error, { message: 'An error occurred' }));
       return;
     }
@@ -175,7 +177,9 @@ class PruneTransform extends Transform {
 
     try {
       await fs.unlink(file);
-    } catch (error) {
+    } catch (e) {
+      /** @type {any} */
+      const error = e;
       if (this._verbose) {
         log('Prune:', colors.red(`${fileRelative}: ${error.message || error}`));
       }
