@@ -1,2 +1,4 @@
 /node_modules
 /src/index.d.ts
+/coverage
+pnpm-lock.yaml

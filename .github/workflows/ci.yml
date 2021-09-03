@@ -1,9 +1,16 @@
 name: Continuous Integration
 on:
-  # Every push
+  # Main branch updated
   push:
+    branches:
+      - main
   # Pull request
   pull_request:
+    types:
+      # Newly opened
+      - opened
+      # Updated (excludes change of base branch)
+      - synchronize
 
 jobs:
   test:
@@ -18,11 +25,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci --ignore-scripts
-    - run: npm test
-    # - run: ./node_modules/.bin/c8 --reporter=lcovonly npm test
-    # - uses: codecov/codecov-action@v1
-    #   with:
-    #     token: ${{ secrets.CODECOV_UPLOAD_TOKEN }}
+    - run: ./node_modules/.bin/c8 --reporter=lcovonly npm test
+    - uses: codecov/codecov-action@v2.0.2
 
   pnpm-check:
     runs-on: ubuntu-latest
@@ -43,7 +47,7 @@ jobs:
         version: ^6.2.3
         run_install: |
           - args: [--ignore-scripts]
-    # - run: pnpm run compile
+    - run: pnpm run compile
     - run: pnpm test
 
   # release-readiness:
