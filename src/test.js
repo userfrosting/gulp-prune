@@ -4,7 +4,7 @@ import * as assert from 'assert';
 import * as domain from 'domain';
 import { Transform } from 'stream';
 import mockFs, { restore } from 'mock-fs';
-import { sync } from 'globby';
+import { globbySync } from 'globby';
 import File from 'vinyl';
 import PluginError from 'plugin-error';
 import { prune } from './index.js';
@@ -25,7 +25,7 @@ class TestFile extends File {
 }
 
 function find(pattern) {
-  return sync(pattern);
+  return globbySync(pattern);
 }
 
 function testStream(done, stream, expectedDeleted) {

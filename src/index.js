@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import globby from 'globby';
+import { globby } from 'globby';
 import PluginError from 'plugin-error';
 import colors from 'ansi-colors';
 import log from 'fancy-log';
