@@ -13,7 +13,7 @@ after transpiling changed files.
 
 ```js
 import gulp from 'gulp';
-import prune from 'gulp-prune';
+import { prune } from 'gulp-prune';
 import newer from 'gulp-newer';
 import babel from 'gulp-babel';
 
@@ -34,7 +34,7 @@ This example will prune all .js and .js.map files that aren't from the source .t
 
 ```js
 import gulp from 'gulp';
-import prune from 'gulp-prune';
+import { prune } from 'gulp-prune';
 import newer from 'gulp-newer';
 import sourcemaps from 'gulp-sourcemaps';
 import typescript from 'gulp-typescript';
