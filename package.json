@@ -50,7 +50,7 @@
     "ansi-colors": "^4.1.1",
     "fancy-log": "^2.0.0",
     "globby": "^13.1.1",
-    "plugin-error": "^1.0.1",
+    "plugin-error": "^2.0.0",
     "vinyl": "^2.2.1"
   },
   "engines": {
