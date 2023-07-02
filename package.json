@@ -6,7 +6,7 @@
   "exports": "./src/index.js",
   "types": "src/index.d.ts",
   "scripts": {
-    "pretest": "eslint src/*.js && tsc",
+    "compile": "eslint src/*.js && tsc",
     "test": "mocha src/test.js",
     "prepublishOnly": "tsc"
   },
