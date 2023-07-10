@@ -19,7 +19,7 @@ dependencies:
     version: 13.2.1
   plugin-error:
     specifier: ^2.0.0
-    version: 2.0.0
+    version: 2.0.1
   vinyl:
     specifier: ^3.0.0
     version: 3.0.0
@@ -1019,8 +1019,8 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  /plugin-error@2.0.0:
-    resolution: {integrity: sha512-o4bwIOmuFwUg2MU6xt7plGEQY3YyENx6kvwaFZBrUpamA91FdS9w3U+pU0y4OuDoBQe+jf3RLGSfQebSRBEVsQ==}
+  /plugin-error@2.0.1:
+    resolution: {integrity: sha512-zMakqvIDyY40xHOvzXka0kUvf40nYIuwRE8dWhti2WtjQZ31xAgBZBhxsK7vK3QbRXS1Xms/LO7B5cuAsfB2Gg==}
     engines: {node: '>=10.13.0'}
     dependencies:
       ansi-colors: 1.1.0
