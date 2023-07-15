@@ -3,48 +3,47 @@
   "version": "2.0.1",
   "description": "Delete files that should not be in the destination directory",
   "type": "module",
-  "exports": "./src/index.js",
-  "types": "src/index.d.ts",
+  "exports": "./dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "compile": "eslint src/*.js && tsc",
-    "test": "mocha src/test.js",
-    "prepublishOnly": "tsc"
+    "compile": "del-cli ./dist && tsc",
+    "test": "node --test dist/prune.test.js",
+    "prepublishOnly": "pnpm run compile",
+    "stamp-version": "pnpm run compile && changelog-updater",
+    "api-report-refresh": "api-extractor run --local",
+    "api-doc-refresh": "api-extractor run && api-documenter markdown -i ./temp -o ./docs/api && git add ./docs/api/*",
+    "release-readiness": "npm run release-readiness:api-changes",
+    "release-readiness:api-changes": "npm run compile && api-extractor run"
   },
-  "keywords": [
-    "gulpplugin",
-    "prune",
-    "delete",
-    "files"
-  ],
+  "keywords": ["gulpplugin", "prune", "delete", "files"],
   "author": {
     "name": "Jordan Mele",
     "email": "SiliconSoldier@outlook.com.au",
     "url": "https://djmm.me/"
   },
-  "contributors": [
-    {
-      "name": "Kurt Blackwell",
-      "url": "https://github.com/hh10k"
-    }
-  ],
+  "contributors": [{
+    "name": "Kurt Blackwell",
+    "url": "https://github.com/hh10k"
+  }],
   "repository": {
     "type": "git",
     "url": "https://github.com/userfrosting/gulp-prune.git"
   },
-  "bugs": {
-    "url": "https://github.com/userfrosting/gulp-prune/issues"
-  },
+  "bugs": {"url": "https://github.com/userfrosting/gulp-prune/issues"},
   "license": "ISC",
   "devDependencies": {
+    "@microsoft/api-documenter": "^7.22.21",
+    "@microsoft/api-extractor": "^7.36.0",
     "@eslint/js": "^10.0.1",
     "@types/fancy-log": "^2.0.0",
     "@types/node": "^25.5.0",
     "@types/vinyl": "^2.0.6",
+    "ava": "^5.3.1",
     "c8": "^11.0.0",
+    "changelog-updater": "^2.0.3",
+    "del-cli": "^5.0.0",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
-    "mocha": "^11.1.0",
-    "mock-fs": "^5.1.4",
     "typescript": "^6.0.2"
   },
   "dependencies": {
@@ -54,7 +53,6 @@
     "plugin-error": "^2.0.0",
     "vinyl": "^3.0.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "engines": {"node": ">=18.0.0"},
+  "packageManager": "pnpm@9.15.9"
 }
