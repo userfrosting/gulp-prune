@@ -33,7 +33,7 @@ devDependencies:
     version: 20.6.5
   '@types/vinyl':
     specifier: ^2.0.6
-    version: 2.0.7
+    version: 2.0.9
   c8:
     specifier: ^8.0.0
     version: 8.0.1
@@ -173,8 +173,8 @@ packages:
     resolution: {integrity: sha512-2qGq5LAOTh9izcc0+F+dToFigBWiK1phKPt7rNhOqJSr35y8rlIBjDwGtFSgAI6MGIhjwOVNSQZVdJsZJ2uR1w==}
     dev: true
 
-  /@types/vinyl@2.0.7:
-    resolution: {integrity: sha512-4UqPv+2567NhMQuMLdKAyK4yzrfCqwaTt6bLhHEs8PFcxbHILsrxaY63n4wgE/BRLDWDQeI+WcTmkXKExh9hQg==}
+  /@types/vinyl@2.0.9:
+    resolution: {integrity: sha512-KCr4aTEUkzSF89qw09e2oxsC/RXXT3K5ZPv4gvj3XTiWVrxNoi7WrqNTahNE/Hul5C9z3B8w+yWNTQgua12oag==}
     dependencies:
       '@types/expect': 1.20.4
       '@types/node': 20.6.5
