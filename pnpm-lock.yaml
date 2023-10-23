@@ -27,7 +27,7 @@ dependencies:
 devDependencies:
   '@types/fancy-log':
     specifier: ^2.0.0
-    version: 2.0.0
+    version: 2.0.1
   '@types/node':
     specifier: ^20.3.3
     version: 20.6.5
@@ -161,8 +161,8 @@ packages:
     resolution: {integrity: sha512-Q5Vn3yjTDyCMV50TB6VRIbQNxSE4OmZR86VSbGaNpfUolm0iePBB4KdEEHmxoY5sT2+2DIvXW0rvMDP2nHZ4Mg==}
     dev: true
 
-  /@types/fancy-log@2.0.0:
-    resolution: {integrity: sha512-g39Vp8ZJ3D0gXhhkhDidVvdy4QajkF7/PV6HGn23FMaMqE/tLC1JNHUeQ7SshKLsBjucakZsXBLkWULbGLdL5g==}
+  /@types/fancy-log@2.0.1:
+    resolution: {integrity: sha512-XUkwOVjG0StZTzw32vHfTGSXmE02/mMfM1Zqouwq2h8rrV/TwLb5TTvePaXO1YqY5yi7u90GsvoRLMqXInaK9Q==}
     dev: true
 
   /@types/istanbul-lib-coverage@2.0.4:
