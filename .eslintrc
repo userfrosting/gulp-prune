@@ -1,13 +1,14 @@
 {
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2022,
     "sourceType": "module"
   },
   "rules": {
     "no-unused-vars": [ "error", { "vars": "all", "args": "none" } ]
   },
   "env": {
+    "es2022": true,
     "es6": true,
     "node": true,
     "mocha": true
