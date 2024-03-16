@@ -6,7 +6,6 @@ import colors from 'ansi-colors';
 import log from 'fancy-log';
 import { Transform } from 'stream';
 import File from 'vinyl';
-import AggregateError from 'aggregate-error';
 
 /**
  * @param {boolean} condition
