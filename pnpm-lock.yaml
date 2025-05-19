@@ -41,7 +41,7 @@ importers:
         version: 8.57.0
       mocha:
         specifier: ^11.1.0
-        version: 11.2.2
+        version: 11.4.0
       mock-fs:
         specifier: ^5.1.4
         version: 5.5.0
@@ -277,8 +277,8 @@ packages:
       supports-color:
         optional: true
 
-  debug@4.4.0:
-    resolution: {integrity: sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==}
+  debug@4.4.1:
+    resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -293,8 +293,8 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  diff@5.2.0:
-    resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
+  diff@7.0.0:
+    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
     engines: {node: '>=0.3.1'}
 
   doctrine@3.0.0:
@@ -575,8 +575,8 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  mocha@11.2.2:
-    resolution: {integrity: sha512-VlSBxrPYHK4YNOEbFdkCxHQbZMoNzBkoPprqtZRW6311EUF/DlSxoycE2e/2NtRk4WKkIXzyrXDTrlikJMWgbw==}
+  mocha@11.4.0:
+    resolution: {integrity: sha512-O6oi5Y9G6uu8f9iqXR6iKNLWHLRex3PKbmHynfpmUnMJJGrdgXh8ZmS85Ei5KR2Gnl+/gQ9s+Ktv5CqKybNw4A==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
 
@@ -1046,7 +1046,7 @@ snapshots:
     dependencies:
       ms: 2.1.2
 
-  debug@4.4.0(supports-color@8.1.1):
+  debug@4.4.1(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
     optionalDependencies:
@@ -1056,7 +1056,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  diff@5.2.0: {}
+  diff@7.0.0: {}
 
   doctrine@3.0.0:
     dependencies:
@@ -1353,12 +1353,12 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  mocha@11.2.2:
+  mocha@11.4.0:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 4.0.3
-      debug: 4.4.0(supports-color@8.1.1)
-      diff: 5.2.0
+      debug: 4.4.1(supports-color@8.1.1)
+      diff: 7.0.0
       escape-string-regexp: 4.0.0
       find-up: 5.0.0
       glob: 10.4.5
