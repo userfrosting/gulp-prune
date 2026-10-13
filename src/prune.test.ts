@@ -71,7 +71,7 @@ async function runPrune(
   for await (const file of stream) {
     output.push(file);
   }
-  return { input, output };
+  return { input: input as unknown as Vinyl[], output };
 }
 
 function assertOutputPassedThrough(input: Vinyl[], output: unknown[]): void {
