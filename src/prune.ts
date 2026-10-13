@@ -1,10 +1,10 @@
-import { globby } from "globby";
-import * as path from "path";
-import PluginError from "plugin-error";
-import { Transform, TransformCallback } from "stream";
-import Vinyl from "vinyl";
+import { globby } from 'globby';
+import * as path from 'node:path';
+import PluginError from 'plugin-error';
+import { Transform, TransformCallback } from 'node:stream';
+import Vinyl from 'vinyl';
 import colors from 'ansi-colors';
-import { Services } from "./services.js";
+import type { Services } from './services.js';
 
 export type MapFn = (srcFile: string) => string | string[];
 export type FilterFn = (name: string) => boolean;
@@ -18,29 +18,25 @@ export type StrictOptions = {
 };
 
 function joinFilters(filter1: FilterFn, filter2: FilterFn): FilterFn {
-  return (name) => filter1(name) && filter2(name);
+  return name => filter1(name) && filter2(name);
 }
 
 function normalize(file: string): string {
-  if (process.platform === 'win32') {
-    file = file.replace(/\\/g, '/');
-  }
-  return file;
+  return process.platform === 'win32' ? file.replace(/\\/g, '/') : file;
 }
 
-async function remove(file: string, verbose: boolean, services: Services) {
+async function remove(file: string, verbose: boolean, services: Services): Promise<void> {
   const { fs, log } = services;
-  // Used for presentation only
   const fileRelative = path.relative('.', file);
 
   try {
     await fs.promises.unlink(file);
-  } catch (e) {
-    const error = e as any;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     if (verbose) {
-      log('Prune:', colors.red(`${fileRelative}: ${error.message || error}`));
+      log('Prune:', colors.red(`${fileRelative}: ${message}`));
     }
-    throw new Error(`${fileRelative}: ${error.message || error}`);
+    throw new Error(`${fileRelative}: ${message}`, { cause: error });
   }
 
   if (verbose) {
@@ -50,7 +46,7 @@ async function remove(file: string, verbose: boolean, services: Services) {
 
 export class Prune extends Transform {
   #dest: string;
-  #keep: Record<string, boolean> = {};
+  #keep = new Set<string>();
   #mapper: MapFn;
   #filter: FilterFn;
   #pattern: string;
@@ -59,10 +55,9 @@ export class Prune extends Transform {
 
   constructor(dest: string, options: StrictOptions, services: Services) {
     super({ objectMode: true });
-    // TODO affected by cwd
     this.#dest = path.resolve(dest);
     this.#mapper = options.map;
-    this.#filter = name => !Object.hasOwnProperty.call(this.#keep, name);
+    this.#filter = name => !this.#keep.has(name);
     this.#pattern = options.pattern;
 
     if (options.filter !== undefined) {
@@ -71,7 +66,7 @@ export class Prune extends Transform {
 
     if (options.ext !== undefined) {
       const ext = options.ext;
-      this.#mapper = name => ext.map(e => name.replace(/(\.[^./\\]*)?$/, e));
+      this.#mapper = name => ext.map(e => name.replace(/(\\.[^./\\\\]*)?$/, e));
       if (this.#pattern === '**/*') {
         this.#pattern = '**/*@(' + ext.join('|') + ')';
       } else {
@@ -83,56 +78,46 @@ export class Prune extends Transform {
     this.#services = services;
   }
 
-  public override async _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): Promise<void> {
-    // Only handle Vinyl chunks
+  public override _transform(chunk: unknown, encoding: BufferEncoding, callback: TransformCallback): void {
     if (!Vinyl.isVinyl(chunk)) {
       this.push(chunk, encoding);
       callback();
       return;
     }
 
-    const name = path.relative(chunk.base, chunk.path);
-    const mapped = this.#mapper(name);
-
-    if (Array.isArray(mapped)) {
-      for (const mappedPath of mapped) {
-        this.#keep[normalize(mappedPath)] = true;
+    try {
+      const name = path.relative(chunk.base, chunk.path);
+      const mapped = this.#mapper(name);
+      if (Array.isArray(mapped)) {
+        for (const mappedPath of mapped) {
+          this.#keep.add(normalize(mappedPath));
+        }
+      } else {
+        this.#keep.add(normalize(mapped));
       }
-    } else {
-      this.#keep[normalize(mapped)] = true;
+      this.push(chunk, encoding);
+      callback();
+    } catch (error) {
+      callback(error as Error);
     }
-
-    this.push(chunk, encoding);
-    callback();
   }
 
   public override async _flush(callback: TransformCallback): Promise<void> {
     try {
-      // TODO globby has a bug in checkCwdOptions when using a custom fs
-      // https://github.com/sindresorhus/globby/issues/236
-      const candidates = await globby(this.#pattern, { cwd: this.#dest, fs: this.#services.fs });
+      const candidates = await globby(this.#pattern, { cwd: this.#dest });
       const deleting = candidates.filter(this.#filter);
-
-      const results = await Promise.allSettled(deleting.map(f => {
-        const file = path.join(this.#dest, f);
-        return remove(file, this.#verbose, this.#services);
-      }));
-
-      /** @type {any[]} */
-      const errors = [];
-      for (const result of results) {
-        if (result.status === 'rejected') {
-          errors.push(result.reason);
-        }
-      }
-
+      const results = await Promise.allSettled(deleting.map(file =>
+        remove(path.join(this.#dest, file), this.#verbose, this.#services),
+      ));
+      const errors = results
+        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+        .map(result => result.reason);
       if (errors.length > 0) {
         throw new AggregateError(errors);
       }
-
-    } catch (e) {
-      const error = e as any;
-      callback(new PluginError('gulp-prune', error, { message: 'An error occurred' }));
+    } catch (error) {
+      const cause = error instanceof Error ? error : new Error(String(error));
+      callback(new PluginError('gulp-prune', cause, { message: 'An error occurred' }));
       return;
     }
 
