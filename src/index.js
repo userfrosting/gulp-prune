@@ -182,7 +182,7 @@ class PruneTransform extends Transform {
       if (this._verbose) {
         log('Prune:', colors.red(`${fileRelative}: ${error.message || error}`));
       }
-      throw new Error(`${fileRelative}: ${error.message || error}`);
+      throw new Error(`${fileRelative}: ${error.message || error}`, { cause: e });
     }
 
     if (this._verbose) {
