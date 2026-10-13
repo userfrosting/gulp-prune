@@ -7,6 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "compile": "del-cli ./dist && tsc",
+    "lint": "eslint src/*.ts",
     "test": "node --test dist/prune.test.js",
     "prepublishOnly": "pnpm run compile",
     "stamp-version": "pnpm run compile && changelog-updater",
@@ -44,6 +45,7 @@
     "del-cli": "^5.0.0",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
+    "typescript-eslint": "^8.71.2",
     "typescript": "^6.0.2"
   },
   "dependencies": {
