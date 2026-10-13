@@ -31,8 +31,8 @@ jobs:
         restore-keys: pnpm-store+${{matrix.platform}}+
     - uses: pnpm/action-setup@v6.1.0
       with:
-        version: ^9.0.0
         run_install: true
+    - run: pnpm run lint
     - run: pnpm run compile
     - run: ./node_modules/.bin/c8 --reporter=lcovonly pnpm test
     - uses: codecov/codecov-action@v7.1.1
