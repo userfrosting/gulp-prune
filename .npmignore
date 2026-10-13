@@ -2,5 +2,6 @@
 \.*
 pnpm-lock.yaml
 tsconfig.json
+coverage
 src/**/*.test.ts
 dist/**/*.test.*
