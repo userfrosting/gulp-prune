@@ -66,7 +66,13 @@ export class Prune extends Transform {
 
     if (options.ext !== undefined) {
       const ext = options.ext;
-      this.#mapper = name => ext.map(e => name.replace(/(\\.[^./\\\\]*)?$/, e));
+      this.#mapper = name => ext.map(e => {
+        const basename = path.basename(name);
+        const extensionStart = basename.lastIndexOf('.');
+        return extensionStart < 0
+          ? name + e
+          : name.slice(0, name.length - basename.length + extensionStart) + e;
+      });
       if (this.#pattern === '**/*') {
         this.#pattern = '**/*@(' + ext.join('|') + ')';
       } else {
