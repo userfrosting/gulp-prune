@@ -17,25 +17,25 @@ jobs:
     strategy:
       matrix:
         platform: [ ubuntu-latest, macos-latest, windows-latest ]
-        node-version: [ ^18.0.0, ^20.0.0 ]
+        node-version: [ ^22.13.0, ^24.0.0 ]
     runs-on: ${{ matrix.platform }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
       with:
         node-version: ${{ matrix.node-version }}
-    - uses: actions/cache@v3
+    - uses: actions/cache@v6
       with:
         path: ~/.pnpm-store
         key: pnpm-store+${{matrix.platform}}+${{matrix.node-version}}+${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: pnpm-store+${{matrix.platform}}+
-    - uses: pnpm/action-setup@v2.2.4
+    - uses: pnpm/action-setup@v6.1.0
       with:
-        version: ^8.6.5
+        version: ^9.0.0
         run_install: true
     - run: pnpm run compile
     - run: ./node_modules/.bin/c8 --reporter=lcovonly pnpm test
-    - uses: codecov/codecov-action@v3.1.4
+    - uses: codecov/codecov-action@v7.1.1
 
   # release-readiness:
   #   runs-on: ubuntu-latest
@@ -43,18 +43,18 @@ jobs:
   #     pull-requests: write
   #     contents: write
   #   steps:
-  #   - uses: actions/checkout@v3
-  #   - uses: actions/setup-node@v3
+  #   - uses: actions/checkout@v7
+  #   - uses: actions/setup-node@v7
   #     with:
-  #       node-version: ^20.0.0
-  #   - uses: actions/cache@v3
+  #       node-version: ^22.13.0
+  #   - uses: actions/cache@v6
   #     with:
   #       path: ~/.pnpm-store
-  #       key: pnpm-store+ubuntu-latest+^16.0.0+${{ hashFiles('**/pnpm-lock.yaml') }}
+  #       key: pnpm-store+ubuntu-latest+^22.13.0+${{ hashFiles('**/pnpm-lock.yaml') }}
   #       restore-keys: pnpm-store+ubuntu-latest+
-  #   - uses: pnpm/action-setup@v2.2.4
+  #   - uses: pnpm/action-setup@v6.1.0
   #     with:
-  #       version: ^8.6.5
+  #       version: ^9.0.0
   #       run_install: true
   #   - run: pnpm run release-readiness
 
@@ -66,21 +66,21 @@ jobs:
       pull-requests: write
       contents: write
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Assess changes
-      uses: tony84727/changed-file-filter@v0.2.2
+      uses: tony84727/changed-file-filter@v0.2.6
       id: filter
       with:
         filters: |
           requirementsChanged:
             - 'package.json'
     - name: Merge lockfile changes
-      uses: fastify/github-action-merge-dependabot@v3.9.0
+      uses: fastify/github-action-merge-dependabot@v3.15.0
       if: steps.filter.outputs.requirementsChanged == 'false'
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Approve requirement changes
-      uses: fastify/github-action-merge-dependabot@v3.9.0
+      uses: fastify/github-action-merge-dependabot@v3.15.0
       if: steps.filter.outputs.requirementsChanged == 'true'
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}

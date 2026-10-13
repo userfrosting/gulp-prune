@@ -2,4 +2,5 @@
 \.*
 pnpm-lock.yaml
 tsconfig.json
-src/test.js
+src/**/*.test.ts
+dist/**/*.test.*

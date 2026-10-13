@@ -1,5 +1,5 @@
 import PluginError from 'plugin-error';
-import { FilterFn, MapFn, StrictOptions } from './prune.js';
+import type { FilterFn, MapFn, StrictOptions } from './prune.js';
 
 export type Options = {
   map?: MapFn,
@@ -35,10 +35,7 @@ export function normalizeOptions(options: Options = {}): StrictOptions {
   }
 
   if (options.ext !== undefined) {
-    if (!Array.isArray(options.ext)) {
-      options.ext = [options.ext];
-    }
-    strictOptions.ext = options.ext.slice();
+    strictOptions.ext = Array.isArray(options.ext) ? options.ext.slice() : [options.ext];
   }
 
   if (options.verbose !== undefined) {

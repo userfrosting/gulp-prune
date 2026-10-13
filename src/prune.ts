@@ -1,10 +1,10 @@
-import { globby } from "globby";
-import * as path from "path";
-import PluginError from "plugin-error";
-import { Transform, TransformCallback } from "stream";
-import Vinyl from "vinyl";
+import { globby } from 'globby';
+import * as path from 'node:path';
+import PluginError from 'plugin-error';
+import { Transform, TransformCallback } from 'node:stream';
+import Vinyl from 'vinyl';
 import colors from 'ansi-colors';
-import { Services } from "./services.js";
+import type { Services } from './services.js';
 
 export type MapFn = (srcFile: string) => string | string[];
 export type FilterFn = (name: string) => boolean;
@@ -28,19 +28,18 @@ function normalize(file: string): string {
   return file;
 }
 
-async function remove(file: string, verbose: boolean, services: Services) {
+async function remove(file: string, verbose: boolean, services: Services): Promise<void> {
   const { fs, log } = services;
-  // Used for presentation only
   const fileRelative = path.relative('.', file);
 
   try {
     await fs.promises.unlink(file);
   } catch (e) {
-    const error = e as any;
+    const error = e instanceof Error ? e.message : String(e);
     if (verbose) {
-      log('Prune:', colors.red(`${fileRelative}: ${error.message || error}`));
+      log('Prune:', colors.red(`${fileRelative}: ${error}`));
     }
-    throw new Error(`${fileRelative}: ${error.message || error}`);
+    throw new Error(`${fileRelative}: ${error}`, { cause: e });
   }
 
   if (verbose) {
@@ -50,7 +49,7 @@ async function remove(file: string, verbose: boolean, services: Services) {
 
 export class Prune extends Transform {
   #dest: string;
-  #keep: Record<string, boolean> = {};
+  #keep = new Set<string>();
   #mapper: MapFn;
   #filter: FilterFn;
   #pattern: string;
@@ -62,7 +61,7 @@ export class Prune extends Transform {
     // TODO affected by cwd
     this.#dest = path.resolve(dest);
     this.#mapper = options.map;
-    this.#filter = name => !Object.hasOwnProperty.call(this.#keep, name);
+    this.#filter = name => !this.#keep.has(name);
     this.#pattern = options.pattern;
 
     if (options.filter !== undefined) {
@@ -83,33 +82,34 @@ export class Prune extends Transform {
     this.#services = services;
   }
 
-  public override async _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): Promise<void> {
-    // Only handle Vinyl chunks
+  public override _transform(chunk: unknown, encoding: BufferEncoding, callback: TransformCallback): void {
     if (!Vinyl.isVinyl(chunk)) {
       this.push(chunk, encoding);
       callback();
       return;
     }
 
-    const name = path.relative(chunk.base, chunk.path);
-    const mapped = this.#mapper(name);
+    try {
+      const name = path.relative(chunk.base, chunk.path);
+      const mapped = this.#mapper(name);
 
-    if (Array.isArray(mapped)) {
-      for (const mappedPath of mapped) {
-        this.#keep[normalize(mappedPath)] = true;
+      if (Array.isArray(mapped)) {
+        for (const mappedPath of mapped) {
+          this.#keep.add(normalize(mappedPath));
+        }
+      } else {
+        this.#keep.add(normalize(mapped));
       }
-    } else {
-      this.#keep[normalize(mapped)] = true;
-    }
 
-    this.push(chunk, encoding);
-    callback();
+      this.push(chunk, encoding);
+      callback();
+    } catch (error) {
+      callback(error as Error);
+    }
   }
 
   public override async _flush(callback: TransformCallback): Promise<void> {
     try {
-      // TODO globby has a bug in checkCwdOptions when using a custom fs
-      // https://github.com/sindresorhus/globby/issues/236
       const candidates = await globby(this.#pattern, { cwd: this.#dest, fs: this.#services.fs });
       const deleting = candidates.filter(this.#filter);
 
@@ -118,8 +118,7 @@ export class Prune extends Transform {
         return remove(file, this.#verbose, this.#services);
       }));
 
-      /** @type {any[]} */
-      const errors = [];
+      const errors: unknown[] = [];
       for (const result of results) {
         if (result.status === 'rejected') {
           errors.push(result.reason);
@@ -131,7 +130,7 @@ export class Prune extends Transform {
       }
 
     } catch (e) {
-      const error = e as any;
+      const error = e instanceof Error ? e : new Error(String(e));
       callback(new PluginError('gulp-prune', error, { message: 'An error occurred' }));
       return;
     }

@@ -1,316 +1,252 @@
-import { Readable, Transform } from 'stream';
+import * as assert from 'node:assert/strict';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { Readable, Transform } from 'node:stream';
 import Vinyl from 'vinyl';
-import PluginError from 'plugin-error';
-import { Prune } from './prune.js';
-import test from "ava";
+import { prune } from './index.js';
+import { Options } from './options.js';
 
-test('creates a transform stream', t => {
-  let pruneStream = new Prune('somewhere', {}, {});
-  t.assert(pruneStream instanceof Transform);
-});
+async function writeFiles(root: string, files: Record<string, string>): Promise<void> {
+  await Promise.all(Object.entries(files).map(async ([name, contents]) => {
+    const file = path.join(root, name);
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.writeFile(file, contents);
+  }));
+}
 
-async function runAndCheck(
-  pruneDest: ConstructorParameters<typeof Prune>[0],
-  pruneOptions: ConstructorParameters<typeof Prune>[1],
-  files: Record<string, string>,
-  expectDeleted: string[]
-) {
-  // TODO memfs for prune
-  const testStream = Readable.from(
-    // TODO I think this was only ./src
-    Object.entries(files).map(([path, contents]) => new Vinyl({ path, contents: Buffer.from(contents) })),
-    { objectMode: true }
-  )
-    .pipe(new Prune(pruneDest, pruneOptions, { fs, log }));
+async function listFiles(root: string): Promise<string[]> {
+  const files: string[] = [];
 
-  const results: Vinyl[] = [];
-  for await (const result of testStream) {
-    results.push(result);
+  async function visit(directory: string, relative = ''): Promise<void> {
+    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+      const name = path.join(relative, entry.name);
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        await visit(fullPath, name);
+      } else {
+        files.push(name);
+      }
+    }
   }
 
-  // TODO Assertions
-  // expected outputs (stream and fs)
+  await visit(root);
+  return files.sort();
 }
 
-{
-  const files = {
-    '/a/b/outside': 'a file outside selected paths',
-    '/a/b/src/both-root-and-dir': '',
-    '/a/b/src/src-root-and-dir': '',
-    '/a/b/src/both-root': '',
-    '/a/b/src/src-root': '',
-    '/a/b/src/dir/both-root-and-dir': '',
-    '/a/b/src/dir/src-root-and-dir': '',
-    '/a/b/src/dir/both-dir': '',
-    '/a/b/src/dir/src-dir': '',
-    '/a/b/src/constructor': 'Name of property on Object.  Unique to src.',
-    '/a/b/src/toLocaleString': 'Name of property on Object.  Common to src and dest.',
-    '/a/b/dest/both-root-and-dir': '',
-    '/a/b/dest/dest-root-and-dir': '',
-    '/a/b/dest/both-root': '',
-    '/a/b/dest/dest-root': '',
-    '/a/b/dest/dir/both-root-and-dir': '',
-    '/a/b/dest/dir/dest-root-and-dir': '',
-    '/a/b/dest/dir/both-dir': '',
-    '/a/b/dest/dir/dest-dir': '',
-    '/a/b/dest/toString': 'Name of property on Object.  Unique to dest.',
-    '/a/b/dest/toLocaleString': 'Name of property on Object.  Common to src and dest.',
-  };
+async function withFixture(
+  sourceFiles: Record<string, string>,
+  destinationFiles: Record<string, string>,
+  run: (source: string, destination: string) => Promise<void>,
+): Promise<void> {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'gulp-prune-'));
+  const source = path.join(root, 'src');
+  const destination = path.join(root, 'dest');
 
-  test('passes data through', async t => {
-    await runAndCheck(
-      // TODO relative dest
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      [],
-    );
-  });
-
-  test('deletes expected files', async t => {
-    const expectDeleted = [
-      '/a/b/dest/dest-root-and-dir',
-      '/a/b/dest/dest-root',
-      '/a/b/dest/dir/dest-root-and-dir',
-      '/a/b/dest/dir/dest-dir',
-      '/a/b/dest/toString',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
-    );
-  });
+  try {
+    await fs.mkdir(source);
+    await fs.mkdir(destination);
+    await writeFiles(source, sourceFiles);
+    await writeFiles(destination, destinationFiles);
+    await run(source, destination);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
 }
 
-{
-  const files = {
-    '/a/b/outside': 'a file outside selected paths',
-    '/a/b/src/1': '',
-    '/a/b/src/dir/2': '',
-    '/a/b/dest/outside': '',
-    '/a/b/dest/1': '',
-    '/a/b/dest/mapped1': 'only with simple transform',
-    '/a/b/dest/dest/1': 'only with directory transform',
-    '/a/b/dest/dest/dir/2': 'only with directory transform',
-    '/a/b/dest/dir/2': '',
-    '/a/b/dest/dir/mapped2': 'only with simple transform',
-  };
+async function runPrune(
+  source: string,
+  destination: string,
+  options: Options = {},
+): Promise<{ input: Vinyl[]; output: unknown[] }> {
+  const input = (await listFiles(source)).map(name => new Vinyl({
+    cwd: path.dirname(source),
+    base: source,
+    path: path.join(source, name),
+    contents: Buffer.from('source'),
+  }));
+  const stream = Readable.from(input, { objectMode: true }).pipe(prune(destination, options));
+  const output: unknown[] = [];
 
-  test('options.map - applies simple function transform', async t => {
-    const expectDeleted = [
-      '/a/b/dest/outside',
-      '/a/b/dest/1',
-      '/a/b/dest/dest/1',
-      '/a/b/dest/dir/2',
-      '/a/b/dest/dest/dir/2',
-    ];
+  for await (const file of stream) {
+    output.push(file);
+  }
 
-    await runAndCheck(
-      // TODO relative dest
-      // { map: f => path.join(path.dirname(f), 'mapped' + path.basename(f)) }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
-    );
-  });
-
-  test('options.map - applies function transform with directory', async t => {
-    const expectDeleted = [
-      '/a/b/dest/outside',
-      '/a/b/dest/1',
-      '/a/b/dest/mapped1',
-      '/a/b/dest/dir/2',
-      '/a/b/dest/dir/mapped2',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { map: f => path.join('dest', f) }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
-    );
-  });
+  return { input, output };
 }
 
-{
-  const files = {
-    '/a/b/dest/aaa': '',
-    '/a/b/dest/aab': '',
-    '/a/b/dest/aba': '',
-    '/a/b/dest/abb': '',
-    '/a/b/dest/baa': '',
-    '/a/b/dest/bab': '',
-    '/a/b/dest/bba': '',
-    '/a/b/dest/bbb': '',
-    '/a/b/dest/123': '',
-    '/a/b/dest/c/123': '',
-  };
-
-  test('options.filter - only deletes files that match a string pattern', async t => {
-    const expectDeleted = [
-      '/a/b/dest/aaa',
-      '/a/b/dest/aab',
-      '/a/b/dest/baa',
-      '/a/b/dest/bab',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { filter: '?a?' }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
-    );
-  });
-
-  test('options.filter - only deletes files that match a function predicate', async t => {
-    const expectDeleted = [
-      '/a/b/dest/aba',
-      '/a/b/dest/abb',
-      '/a/b/dest/bba',
-      '/a/b/dest/bbb',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { filter: f => /.b.$/.test(f) }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
-    );
-  });
-
-  test('options.filter - pattern matches relative to base directory', async t => {
-    const expectDeleted = [
-      '/a/b/dest/123',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { filter: '123' }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
-    );
-  });
-
-  test('options.filter - propagates errors when filter throws', async t => {
-    // TODO memfs for prune
-    const testStream = Readable.from(
-      // TODO I think this was only ./src
-      Object.entries(files).map(([path, contents]) => new Vinyl({ path, contents: Buffer.from(contents) })),
-      { objectMode: true }
-    )
-      // TODO relative dest
-      // { filter: () => { throw new ExpectedError(); } }
-      .pipe(new Prune('/a/b/dest', { map, pattern, verbose, ext, filter }, { fs, log }));
-
-    // Run stream, catch error
-  });
+function assertOutputPassedThrough(input: Vinyl[], output: unknown[]): void {
+  assert.equal(output.length, input.length);
+  input.forEach((file, index) => assert.strictEqual(output[index], file));
 }
 
-{
-  const files = {
-    '/a/b/src/1.old': '',
-    '/a/b/src/2': '',
-    '/a/b/src/4.old/four': '',
-    '/a/b/dest/1.old': '',
-    '/a/b/dest/1.old.new': '',
-    '/a/b/dest/1.new': '',
-    '/a/b/dest/1.new.map': '',
-    '/a/b/dest/2': '',
-    '/a/b/dest/2.new': '',
-    '/a/b/dest/2.new.map': '',
-    '/a/b/dest/3.new': '',
-    '/a/b/dest/3.map': '',
-    '/a/b/dest/4.new': '',
-  };
+describe('prune()', () => {
+  it('creates a transform stream', async () => {
+    const stream = prune('somewhere');
+    assert.ok(stream instanceof Transform);
+  });
 
-  test('options.ext - adds or removes single extension', async t => {
-    const expectDeleted = [
-      '/a/b/dest/1.old.new',
-      '/a/b/dest/3.new',
-      '/a/b/dest/4.new',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { ext: '.new' }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
+  it('passes Vinyl files through and removes destination files without a source match', async () => {
+    await withFixture(
+      { 'root.txt': '', 'dir/source.txt': '' },
+      { 'root.txt': '', 'stale.txt': '', 'dir/source.txt': '', 'dir/stale.txt': '' },
+      async (source, destination) => {
+        const { input, output } = await runPrune(source, destination);
+        assertOutputPassedThrough(input, output);
+        assert.deepEqual(await listFiles(destination), ['dir/source.txt', 'root.txt']);
+      },
     );
   });
 
-  test('options.ext - adds or removes multiple extensions', async t => {
-    const expectDeleted = [
-      'dest/1.old.new',
-      'dest/3.new',
-      'dest/4.new',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { ext: [ '.new', '.new.map' ] }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
+  it('passes non-Vinyl chunks through', async () => {
+    await withFixture(
+      {},
+      { stale: '' },
+      async (_source, destination) => {
+        const output: unknown[] = [];
+        for await (const chunk of Readable.from(['chunk'], { objectMode: true }).pipe(prune(destination))) {
+          output.push(chunk);
+        }
+        assert.deepEqual(output, ['chunk']);
+        assert.deepEqual(await listFiles(destination), []);
+      },
     );
   });
 
-  test('options.ext - can\'t be used with options.map', async t => {
-    // TODO memfs for prune
-    const testStream = Readable.from(
-      // TODO I think this was only ./src
-      Object.entries(files).map(([path, contents]) => new Vinyl({ path, contents: Buffer.from(contents) })),
-      { objectMode: true }
-    )
-      // TODO relative dest
-      // { map: f => f + '.js', ext: '.js' }
-      .pipe(new Prune('/a/b/dest', { map, pattern, verbose, ext, filter }, { fs, log }));
-
-    // run test stream, catch error
-  });
-
-  test('options.ext - works with options.filter pattern', async t => {
-    const expectDeleted = [
-      '/a/b/dest/3.new',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { ext: [ '.new', '.new.map' ], filter: '**/3.*' }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
+  it('keeps mapped files from a simple map function', async () => {
+    await withFixture(
+      { '1': '', 'dir/2': '' },
+      { '1': '', mapped1: '', 'dir/2': '', 'dir/mapped2': '', stale: '' },
+      async (source, destination) => {
+        await runPrune(source, destination, {
+          map: name => path.join(path.dirname(name), `mapped${path.basename(name)}`),
+        });
+        assert.deepEqual(await listFiles(destination), ['dir/mapped2', 'mapped1']);
+      },
     );
   });
 
-  test('options.ext - works with options.filter function', async t => {
-    const expectDeleted = [
-      '/a/b/dest/3.new',
-    ];
-
-    await runAndCheck(
-      // TODO relative dest
-      // { ext: [ '.new', '.new.map' ], filter: (name) => /3/.test(name) }
-      '/a/b/dest',
-      { map, pattern, verbose, ext, filter },
-      files,
-      expectDeleted,
+  it('keeps files mapped beneath a destination subdirectory', async () => {
+    await withFixture(
+      { '1': '', 'dir/2': '' },
+      { 'dest/1': '', 'dest/dir/2': '', '1': '', stale: '' },
+      async (source, destination) => {
+        await runPrune(source, destination, { map: name => path.join('dest', name) });
+        assert.deepEqual(await listFiles(destination), ['dest/1', 'dest/dir/2']);
+      },
     );
   });
-}
+
+  it('keeps all files returned by an array map function', async () => {
+    await withFixture(
+      { '1': '' },
+      { '1.js': '', '1.css': '', stale: '' },
+      async (source, destination) => {
+        await runPrune(source, destination, { map: name => [`${name}.js`, `${name}.css`] });
+        assert.deepEqual(await listFiles(destination), ['1.css', '1.js']);
+      },
+    );
+  });
+
+  it('uses a string filter as the destination glob', async () => {
+    const names = ['aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb', '123'];
+    await withFixture(
+      {},
+      Object.fromEntries(names.map(name => [name, ''])),
+      async (source, destination) => {
+        await runPrune(source, destination, { filter: '?a?' });
+        assert.deepEqual(await listFiles(destination), ['123', 'aba', 'abb', 'bba', 'bbb']);
+      },
+    );
+  });
+
+  it('uses a filter function to select files for deletion', async () => {
+    const names = ['aaa', 'aab', 'aba', 'abb', 'baa', 'bab', 'bba', 'bbb'];
+    await withFixture(
+      {},
+      Object.fromEntries(names.map(name => [name, ''])),
+      async (source, destination) => {
+        await runPrune(source, destination, { filter: name => name.endsWith('ba') });
+        assert.deepEqual(await listFiles(destination), ['aaa', 'aab', 'abb', 'baa', 'bab', 'bbb']);
+      },
+    );
+  });
+
+  it('propagates errors thrown by a filter function', async () => {
+    await withFixture(
+      {},
+      { stale: '' },
+      async (source, destination) => {
+        await assert.rejects(
+          runPrune(source, destination, { filter: () => { throw new Error('filter failed'); } }),
+          error => {
+            assert.ok(error instanceof Error);
+            assert.equal((error as Error & { plugin?: string }).plugin, 'gulp-prune');
+            assert.equal(error.message, 'An error occurred');
+            assert.match(error.stack ?? '', /filter failed/);
+            return true;
+          },
+        );
+      },
+    );
+  });
+
+  it('adds each configured extension when matching source files', async () => {
+    await withFixture(
+      { '1.old': '', '2': '' },
+      {
+        '1.old': '',
+        '1.new': '',
+        '1.new.map': '',
+        '2.new': '',
+        '2.new.map': '',
+        '3.new': '',
+        'stale': '',
+      },
+      async (source, destination) => {
+        await runPrune(source, destination, { ext: ['.new', '.new.map'] });
+        assert.deepEqual(
+          await listFiles(destination),
+          ['1.new', '1.new.map', '1.old', '2.new', '2.new.map', 'stale'],
+        );
+      },
+    );
+  });
+
+  it('combines extensions with a filter function', async () => {
+    await withFixture(
+      { '1': '', '2': '' },
+      { '1.new': '', '2.new': '', '3.new': '', '3.map': '' },
+      async (source, destination) => {
+        await runPrune(source, destination, {
+          ext: '.new',
+          filter: name => name.startsWith('3'),
+        });
+        assert.deepEqual(await listFiles(destination), ['1.new', '2.new', '3.map']);
+      },
+    );
+  });
+
+  it('does not delete files whose names overlap Object properties', async () => {
+    await withFixture(
+      Object.fromEntries([['constructor', ''], ['toLocaleString', ''], ['__proto__', '']]),
+      Object.fromEntries([
+        ['constructor', ''],
+        ['toLocaleString', ''],
+        ['__proto__', ''],
+        ['toString', ''],
+      ]),
+      async (source, destination) => {
+        await runPrune(source, destination);
+        assert.deepEqual(await listFiles(destination), ['__proto__', 'constructor', 'toLocaleString']);
+      },
+    );
+  });
+
+  it('rejects incompatible map and extension options', async () => {
+    assert.throws(
+      () => prune('somewhere', { map: name => name, ext: '.js' }),
+      /options\.map and options\.ext are incompatible/,
+    );
+  });
+});
