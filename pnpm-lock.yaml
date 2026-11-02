@@ -29,7 +29,7 @@ importers:
         version: 10.0.1(eslint@10.13.0)
       '@microsoft/api-documenter':
         specifier: ^7.22.21
-        version: 7.30.18(@types/node@26.6.5)
+        version: 7.30.19(@types/node@26.6.5)
       '@microsoft/api-extractor':
         specifier: ^7.36.0
         version: 7.59.4(@types/node@26.6.5)
@@ -169,8 +169,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@microsoft/api-documenter@7.30.18':
-    resolution: {integrity: sha512-HbmyutE7u6JQ6GYn4dxyDDfoFKdLjHOvCcbRGSkz+wfWJcKxYzpG/G3kSsmZgW+4JMeTh3u36usiwAbHvmhlhA==}
+  '@microsoft/api-documenter@7.30.19':
+    resolution: {integrity: sha512-LuKurf1uBwQUGrrFa/tWJmw6S1Hd6OYJR3gQwCh6CIW7V+rI7qzSEoRnAU/inHLJnT9ggo90T0aVZqE2UvbpVQ==}
     engines: {node: '>=20.9.0'}
     hasBin: true
 
@@ -740,6 +740,9 @@ packages:
 
   fast-uri@3.1.8:
     resolution: {integrity: sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg==}
+
+  fast-uri@3.1.9:
+    resolution: {integrity: sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ==}
 
   fastq@1.15.0:
     resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
@@ -1661,7 +1664,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@microsoft/api-documenter@7.30.18(@types/node@26.6.5)':
+  '@microsoft/api-documenter@7.30.19(@types/node@26.6.5)':
     dependencies:
       '@microsoft/api-extractor-model': 7.33.15(@types/node@26.6.5)
       '@microsoft/tsdoc': 0.17.1
@@ -1919,7 +1922,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.8
+      fast-uri: 3.1.9
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -2314,6 +2317,8 @@ snapshots:
 
   fast-uri@3.1.8: {}
 
+  fast-uri@3.1.9: {}
+
   fastq@1.15.0:
     dependencies:
       reusify: 1.0.4
@@ -2655,7 +2660,7 @@ snapshots:
     dependencies:
       hosted-git-info: 4.1.0
       is-core-module: 2.17.0
-      semver: 7.7.4
+      semver: 7.8.5
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
